@@ -4,6 +4,6 @@
 int main() 
 {
 	std::cout << "Editor start" << std::endl;
-	Engine::sayHello();
+	Engine::CheckGLFW();
 	std::cin.get();
 }

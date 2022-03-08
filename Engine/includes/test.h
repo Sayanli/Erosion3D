@@ -1,3 +1,3 @@
 namespace Engine {
-	void sayHello();
+	int CheckGLFW();
 }
