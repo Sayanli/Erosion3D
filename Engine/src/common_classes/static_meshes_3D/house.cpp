@@ -27,10 +27,10 @@ House::House(bool withPositions, bool withTextureCoordinates, bool withNormals)
     std::call_once(prepareOnceFlag, []()
     {
         auto& tm = TextureManager::getInstance();
-        tm.loadTexture2D(WALLS_TEXTURE_KEY, "data/textures/brick.png");
-        tm.loadTexture2D(DOOR_WALL_TEXTURE_KEY, "data/textures/tut008/house_texture_front.png");
-        tm.loadTexture2D(WINDOWS_WALL_TEXTURE_KEY, "data/textures/tut008/house_texture_side.png");
-        tm.loadTexture2D(ROOF_TEXTURE_KEY, "data/textures/prismarine_dark.png");
+        tm.loadTexture2D(WALLS_TEXTURE_KEY, "../../Engine/data/textures/brick.png");
+        tm.loadTexture2D(DOOR_WALL_TEXTURE_KEY, "../../Engine/data/textures/tut008/house_texture_front.png");
+        tm.loadTexture2D(WINDOWS_WALL_TEXTURE_KEY, "../../Engine/data/textures/tut008/house_texture_side.png");
+        tm.loadTexture2D(ROOF_TEXTURE_KEY, "../../Engine/data/textures/prismarine_dark.png");
     });
 }
 

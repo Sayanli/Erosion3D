@@ -22,17 +22,17 @@ SnowCoveredPlainGround::SnowCoveredPlainGround(bool withPositions, bool withText
     std::call_once(prepareOnceFlag, []()
     {
         auto& sm = ShaderManager::getInstance();
-        sm.loadVertexShader("tut008_ground", "data/shaders/tut008/ground_shader.vert");
-        sm.loadFragmentShader("tut008_ground", "data/shaders/tut008/ground_shader.frag");
+        sm.loadVertexShader("tut008_ground", "../../Engine/data/shaders/tut008/ground_shader.vert");
+        sm.loadFragmentShader("tut008_ground", "../../Engine/data/shaders/tut008/ground_shader.frag");
 
         auto& groundProgram = ShaderProgramManager::getInstance().createShaderProgram("snow_ground");
         groundProgram.addShaderToProgram(sm.getVertexShader("tut008_ground"));
         groundProgram.addShaderToProgram(sm.getFragmentShader("tut008_ground"));
 
         auto& tm = TextureManager::getInstance();
-        tm.loadTexture2D("snow", "data/textures/snow.png");
-        tm.loadTexture2D("pavement", "data/textures/pavement.jpg");
-        tm.loadTexture2D("tut008_path", "data/textures/tut008/path.png");
+        tm.loadTexture2D("snow", "../../Engine/data/textures/snow.png");
+        tm.loadTexture2D("pavement", "../../Engine/data/textures/pavement.jpg");
+        tm.loadTexture2D("tut008_path", "../../Engine/data/textures/tut008/path.png");
     });
 }
 

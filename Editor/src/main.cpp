@@ -1,10 +1,12 @@
 #include <iostream>
 #include "Application.h"
+
+
 int main() 
 {
 	const std::string& windowTitle = "018.) Heightmap Pt.3 - Multiple Layers - Tutorial by Michal Bubnar (www.mbsoftworks.sk)";
-	int majorVersion = 4;
-	int minorVersion = 4;
+	int majorVersion = 3;
+	int minorVersion = 3;
 
 	char answer;
 	std::cout << "Would you like to run in fullscreen mode? (y/n): ";

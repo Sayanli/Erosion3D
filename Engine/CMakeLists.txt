@@ -4,10 +4,12 @@ set(ENGINE_PROJECT_NAME Engine)
 
 file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.c")
 file(GLOB_RECURSE HEADERS "includes/*.h" "includes/*.hpp")
+file(GLOB_RECURSE SHADERS "data/*.vert" "data/*.frag" "data/*.geom" "data/*.png" "data/*.jpg")
 
 set(ENGINE_ALL_SOURCES
 	${SOURCES}
 	${HEADERS}
+	${SHADERS}
 )
 
 
@@ -24,19 +26,19 @@ target_include_directories(${ENGINE_PROJECT_NAME} PRIVATE src)
 target_compile_features(${ENGINE_PROJECT_NAME} PUBLIC cxx_std_17)
 
 add_subdirectory(../external/glfw ${CMAKE_CURRENT_BINARY_DIR}/glfw)
-target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE glfw)
+target_link_libraries(${ENGINE_PROJECT_NAME} PUBLIC glfw)
 
 add_subdirectory(../external/glad ${CMAKE_CURRENT_BINARY_DIR}/glad)
-target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE glad)
+target_link_libraries(${ENGINE_PROJECT_NAME} PUBLIC glad)
 
 add_subdirectory(../external/spdlog ${CMAKE_CURRENT_BINARY_DIR}/spdlog)
-target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE spdlog)
+target_link_libraries(${ENGINE_PROJECT_NAME} PUBLIC spdlog)
 
 add_subdirectory(../external/glm ${CMAKE_CURRENT_BINARY_DIR}/glm)
-target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE glm)
+target_link_libraries(${ENGINE_PROJECT_NAME} PUBLIC glm)
 
 add_subdirectory(../external/assimp ${CMAKE_CURRENT_BINARY_DIR}/assimp)
-target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE assimp)
+target_link_libraries(${ENGINE_PROJECT_NAME} PUBLIC assimp)
 
 
 set(IMGUI_INCLUDES

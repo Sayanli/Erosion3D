@@ -67,14 +67,14 @@ void OpenGLWindow018::initializeScene()
 		auto& spm = ShaderProgramManager::getInstance();
 		auto& tm = TextureManager::getInstance();
 
-		sm.loadVertexShader("tut014_main", "data/shaders/tut014-diffuse-lighting/shader.vert");
-		sm.loadFragmentShader("tut014_main", "data/shaders/tut014-diffuse-lighting/shader.frag");
-		sm.loadFragmentShader("ambientLight", "data/shaders/lighting/ambientLight.frag");
-		sm.loadFragmentShader("diffuseLight", "data/shaders/lighting/diffuseLight.frag");
+		sm.loadVertexShader("tut014_main", "../../Engine/data/shaders/tut014-diffuse-lighting/shader.vert");
+		sm.loadFragmentShader("tut014_main", "../../Engine/data/shaders/tut014-diffuse-lighting/shader.frag");
+		sm.loadFragmentShader("ambientLight", "../../Engine/data/shaders/lighting/ambientLight.frag");
+		sm.loadFragmentShader("diffuseLight", "../../Engine/data/shaders/lighting/diffuseLight.frag");
 
-		sm.loadVertexShader("normals", "data/shaders/normals/normals.vert");
-		sm.loadGeometryShader("normals", "data/shaders/normals/normals.geom");
-		sm.loadFragmentShader("normals", "data/shaders/normals/normals.frag");
+		sm.loadVertexShader("normals", "../../Engine/data/shaders/normals/normals.vert");
+		sm.loadGeometryShader("normals", "../../Engine/data/shaders/normals/normals.geom");
+		sm.loadFragmentShader("normals", "../../Engine/data/shaders/normals/normals.frag");
 
 		auto& mainShaderProgram = spm.createShaderProgram("main");
 		mainShaderProgram.addShaderToProgram(sm.getVertexShader("tut014_main"));
@@ -87,21 +87,21 @@ void OpenGLWindow018::initializeScene()
 		normalsShaderProgram.addShaderToProgram(sm.getGeometryShader("normals"));
 		normalsShaderProgram.addShaderToProgram(sm.getFragmentShader("normals"));
 
-		skybox = std::make_unique<static_meshes_3D::Skybox>("data/skyboxes/desert", "png");
+		skybox = std::make_unique<static_meshes_3D::Skybox>("../../Engine/data/skyboxes/desert", "png");
 
 		SamplerManager::getInstance().createSampler("main", MAG_FILTER_BILINEAR, MIN_FILTER_TRILINEAR);
-		TextureManager::getInstance().loadTexture2D("crate", "data/textures/crate.png");
-		TextureManager::getInstance().loadTexture2D("white_marble", "data/textures/white_marble.jpg");
-		TextureManager::getInstance().loadTexture2D("grass", "data/textures/grass.jpg");
-		TextureManager::getInstance().loadTexture2D("rocky_terrain", "data/textures/rocky_terrain.jpg");
-		TextureManager::getInstance().loadTexture2D("snow", "data/textures/snow.png");
+		TextureManager::getInstance().loadTexture2D("crate", "../../Engine/data/textures/crate.png");
+		TextureManager::getInstance().loadTexture2D("white_marble", "../../Engine/data/textures/white_marble.jpg");
+		TextureManager::getInstance().loadTexture2D("grass", "../../Engine/data/textures/grass.jpg");
+		TextureManager::getInstance().loadTexture2D("rocky_terrain", "../../Engine/data/textures/rocky_terrain.jpg");
+		TextureManager::getInstance().loadTexture2D("snow", "../../Engine/data/textures/snow.png");
 
 		cube = std::make_unique<static_meshes_3D::Cube>(true, true, true);
 		pyramid = std::make_unique<static_meshes_3D::Pyramid>(true, true, true);
 		torus = std::make_unique<static_meshes_3D::Torus>(20, 20, 3.0f, 1.5f, true, true, true);
 
 		static_meshes_3D::Heightmap::prepareMultiLayerShaderProgram();
-		heightmap = std::make_unique<static_meshes_3D::Heightmap>("data\\heightmaps\\tut018.png", true, true, true);
+		heightmap = std::make_unique<static_meshes_3D::Heightmap>("../../Engine/data/heightmaps/tut018.png", true, true, true);
 
 		spm.linkAllPrograms();
 	}

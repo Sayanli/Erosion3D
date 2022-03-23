@@ -44,8 +44,8 @@ void Heightmap::prepareMultiLayerShaderProgram()
         throw std::runtime_error("Please load fragment shaders for ambient light and diffuse light!");
     }
     
-    sm.loadVertexShader(MULTILAYER_SHADER_PROGRAM_KEY, "data/shaders/heightmap/multilayer.vert");
-    sm.loadFragmentShader(MULTILAYER_SHADER_PROGRAM_KEY, "data/shaders/heightmap/multilayer.frag");
+    sm.loadVertexShader(MULTILAYER_SHADER_PROGRAM_KEY, "../../Engine/data/shaders/heightmap/multilayer.vert");
+    sm.loadFragmentShader(MULTILAYER_SHADER_PROGRAM_KEY, "../../Engine/data/shaders/heightmap/multilayer.frag");
 
     auto& spm = ShaderProgramManager::getInstance();
     auto& multiLayerHeightmapShaderProgram = spm.createShaderProgram(MULTILAYER_SHADER_PROGRAM_KEY);
