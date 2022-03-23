@@ -35,6 +35,10 @@ target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE spdlog)
 add_subdirectory(../external/glm ${CMAKE_CURRENT_BINARY_DIR}/glm)
 target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE glm)
 
+add_subdirectory(../external/assimp ${CMAKE_CURRENT_BINARY_DIR}/assimp)
+target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE assimp)
+
+
 set(IMGUI_INCLUDES
 	../external/imgui/imgui.h
 	../external/imgui/backends/imgui_impl_glfw.h

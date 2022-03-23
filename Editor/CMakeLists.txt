@@ -6,6 +6,7 @@ add_executable(${EDITOR_PROJECT_NAME}
 	src/main.cpp
 )
 
+
 target_link_libraries(${EDITOR_PROJECT_NAME} Engine)
 target_compile_features(${EDITOR_PROJECT_NAME} PUBLIC cxx_std_17)
 

@@ -10,3 +10,12 @@
 [submodule "external/imgui"]
 	path = external/imgui
 	url = https://github.com/ocornut/imgui.git
+[submodule "external/assimp"]
+	path = external/assimp
+	url = https://github.com/assimp/assimp.git
+[submodule "external/freetype2"]
+	path = external/freetype2
+	url = https://github.com/aseprite/freetype2.git
+[submodule "external/stb"]
+	path = external/stb
+	url = https://github.com/gracicot/stb-cmake.git

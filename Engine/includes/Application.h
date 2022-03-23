@@ -1,30 +1,13 @@
-//#pragma once
-//
-//#include <memory>
-//
-//namespace Engine
-//{
-//    class Application
-//    {
-//    public:
-//        Application();
-//        virtual ~Application();
-//
-//        Application(const Application&) = delete;
-//        Application(Application&&) = delete;
-//        Application& operator=(const Application&) = delete;
-//        Application& operator=(Application&&) = delete;
-//
-//        virtual int start(unsigned int window_width, unsigned int window_height, const char* title);
-//
-//        virtual void on_update() {}
-//
-//    private:
-//        std::unique_ptr<class Window> m_pWindow;
-//
-//        bool m_bCloseWindow = false;
-//    };
-//}
+#pragma once
 
+// Project
+#include "../includes/common_classes/OpenGLWindow.h"
 
-
+class OpenGLWindow018 : public OpenGLWindow
+{
+public:
+    void initializeScene() override;
+    void renderScene() override;
+    void updateScene() override;
+    void releaseScene() override;
+};
