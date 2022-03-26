@@ -33,7 +33,14 @@ Heightmap::Heightmap(const std::string& fileName, bool withPositions, bool withT
         return;
     }
 
+    stbi_set_flip_vertically_on_load(1);
+    int width, height, bytesPerPixel;
+    const auto imageData = stbi_load(fileName.c_str(), &width, &height, &bytesPerPixel, 0);
+    dim = glm::vec2(height, width);
+    stbi_image_free(imageData);
+
     createFromHeightData(heightData);
+
 }
 
 void Heightmap::prepareMultiLayerShaderProgram()
@@ -242,6 +249,7 @@ std::vector<std::vector<float>> Heightmap::generateRandomHeightData(const HillAl
     return heightData;
 }
 
+
 std::vector<std::vector<float>> Heightmap::getHeightDataFromImage(const std::string& fileName)
 {
     stbi_set_flip_vertically_on_load(1);
@@ -331,8 +339,6 @@ void Heightmap::setUpNormals()
     {
         for (auto j = 0; j < _columns; j++)
         {
-            // Now we wanna calculate final normal for [i][j] vertex. We will have a look at all triangles this vertex is part of, and then we will make average vector
-            // of all adjacent triangles' normals
 
             const auto isFirstRow = i == 0;
             const auto isFirstColumn = j == 0;
@@ -341,31 +347,26 @@ void Heightmap::setUpNormals()
 
             auto finalVertexNormal = glm::vec3(0.0f, 0.0f, 0.0f);
 
-            // Look for triangle to the upper-left
             if (!isFirstRow && !isFirstColumn) {
                 finalVertexNormal += tempNormals[0][i-1][j-1];
             }
 
-            // Look for triangles to the upper-right
             if (!isFirstRow && !isLastColumn) {
                 for (auto k = 0; k < 2; k++) {
                     finalVertexNormal += tempNormals[k][i - 1][j];
                 }
             }
 
-            // Look for triangle to the bottom-right
             if (!isLastRow && !isLastColumn) {
                 finalVertexNormal += tempNormals[0][i][j];
             }
 
-            // Look for triangles to the bottom-right
             if (!isLastRow && !isFirstColumn) {
                 for (auto k = 0; k < 2; k++) {
                     finalVertexNormal += tempNormals[k][i][j-1];
                 }
             }
 
-            // Store final normal of j-th vertex in i-th row
             _normals[i][j] = glm::normalize(finalVertexNormal);
         }
         _vbo.addRawData(_normals[i].data(), _columns * sizeof(glm::vec3));
@@ -374,7 +375,6 @@ void Heightmap::setUpNormals()
 
 void Heightmap::setUpIndexBuffer()
 {
-    // Create a VBO with heightmap indices
     _indicesVBO.createVBO();
     _indicesVBO.bindVBO(GL_ELEMENT_ARRAY_BUFFER);
     _primitiveRestartIndex = _numVertices;
@@ -394,11 +394,73 @@ void Heightmap::setUpIndexBuffer()
         _indicesVBO.addRawData(&_primitiveRestartIndex, sizeof(int));
     }
 
-    // Send indices to GPU
     _indicesVBO.uploadDataToGPU(GL_STATIC_DRAW);
 
-    // Calculate total count of indices
     _numIndices = (_rows - 1)*_columns * 2 + _rows - 1;
 }
 
-} // namespace static_meshes_3D
+glm::vec3 Heightmap::surfaceNormal(int i, int j)
+{
+    glm::vec3 n;
+    if (i < _heightData[0].size() - 1) n = glm::vec3(0.5) * glm::normalize(glm::vec3(scale * (_heightData[i][j] - _heightData[i + 1][j]), 1.0, 0.0));
+    else n = glm::vec3(0.15) * glm::normalize(glm::vec3(scale * (_heightData[i][j] - _heightData[i][j]), 1.0, 0.0));
+    if (i > 0) n += glm::vec3(0.15) * glm::normalize(glm::vec3(scale * (_heightData[i - 1][j] - _heightData[i][j]), 1.0, 0.0));
+    else n += glm::vec3(0.15) * glm::normalize(glm::vec3(scale * (_heightData[i][j] - _heightData[i][j]), 1.0, 0.0));
+    if (j < _heightData[0].size() - 1) n += glm::vec3(0.25) * glm::normalize(glm::vec3(0.0, 1.0, scale * (_heightData[i][j] - _heightData[i][j + 1])));
+    else n += glm::vec3(0.15) * glm::normalize(glm::vec3(0.0, 1.0, scale * (_heightData[i][j] - _heightData[i][j])));
+    if (j > 0) n += glm::vec3(0.15) * glm::normalize(glm::vec3(0.0, 1.0, scale * (_heightData[i][j - 1] - _heightData[i][j])));
+    else n += glm::vec3(0.15) * glm::normalize(glm::vec3(0.0, 1.0, scale * (_heightData[i][j] - _heightData[i][j])));
+
+    if (i < _heightData[0].size() - 1 && j < _heightData[0].size() - 1) n += glm::vec3(0.1) * glm::normalize(glm::vec3(scale * (_heightData[i][j] - _heightData[i + 1][j + 1]) / sqrt(2), sqrt(2), scale * (_heightData[i][j] - _heightData[i + 1][j + 1]) / sqrt(2)));
+    else if (i < _heightData[0].size() - 1) n += glm::vec3(0.1) * glm::normalize(glm::vec3(scale * (_heightData[i][j] - _heightData[i + 1][j]) / sqrt(2), sqrt(2), scale * (_heightData[i][j] - _heightData[i + 1][j]) / sqrt(2)));
+    else if (j < _heightData[0].size() - 1) n += glm::vec3(0.1) * glm::normalize(glm::vec3(scale * (_heightData[i][j] - _heightData[i][j + 1]) / sqrt(2), sqrt(2), scale * (_heightData[i][j] - _heightData[i][j + 1]) / sqrt(2)));
+    else n += glm::vec3(0.1) * glm::normalize(glm::vec3(0, sqrt(2), 0));
+    if (i < _heightData[0].size() - 1 && j > 0) n += glm::vec3(0.1) * glm::normalize(glm::vec3(scale * (_heightData[i][j] - _heightData[i + 1][j - 1]) / sqrt(2), sqrt(2), scale * (_heightData[i][j] - _heightData[i + 1][j - 1]) / sqrt(2)));
+    else if (j > 0) n += glm::vec3(0.1) * glm::normalize(glm::vec3(scale * (_heightData[i][j] - _heightData[i][j - 1]) / sqrt(2), sqrt(2), scale * (_heightData[i][j] - _heightData[i][j - 1]) / sqrt(2)));
+    else if (i < _heightData[0].size() - 1) n += glm::vec3(0.1) * glm::normalize(glm::vec3(scale * (_heightData[i][j] - _heightData[i + 1][j]) / sqrt(2), sqrt(2), scale * (_heightData[i][j] - _heightData[i + 1][j]) / sqrt(2)));
+    else n += glm::vec3(0.1) * glm::normalize(glm::vec3(0, sqrt(2), 0));
+    if (j < _heightData[0].size() - 1 && i > 0) n += glm::vec3(0.1) * glm::normalize(glm::vec3(scale * (_heightData[i][j] - _heightData[i - 1][j + 1]) / sqrt(2), sqrt(2), scale * (_heightData[i][j] - _heightData[i - 1][j + 1]) / sqrt(2)));
+    else if (j < _heightData[0].size() - 1) n += glm::vec3(0.1) * glm::normalize(glm::vec3(scale * (_heightData[i][j] - _heightData[i][j + 1]) / sqrt(2), sqrt(2), scale * (_heightData[i][j] - _heightData[i][j + 1]) / sqrt(2)));
+    else if (i > 0) n += glm::vec3(0.1) * glm::normalize(glm::vec3(scale * (_heightData[i][j] - _heightData[i - 1][j]) / sqrt(2), sqrt(2), scale * (_heightData[i][j] - _heightData[i - 1][j]) / sqrt(2)));
+    else n += glm::vec3(0.1) * glm::normalize(glm::vec3(0, sqrt(2), 0));
+    if (i > 0 && j > 0) n += glm::vec3(0.1) * glm::normalize(glm::vec3(scale * (_heightData[i][j] - _heightData[i - 1][j - 1]) / sqrt(2), sqrt(2), scale * (_heightData[i][j] - _heightData[i - 1][j - 1]) / sqrt(2)));
+    else if (i > 0) n += glm::vec3(0.1) * glm::normalize(glm::vec3(scale * (_heightData[i][j] - _heightData[i - 1][j]) / sqrt(2), sqrt(2), scale * (_heightData[i][j] - _heightData[i - 1][j]) / sqrt(2)));
+    else if (j > 0) n += glm::vec3(0.1) * glm::normalize(glm::vec3(scale * (_heightData[i][j] - _heightData[i][j - 1]) / sqrt(2), sqrt(2), scale * (_heightData[i][j] - _heightData[i][j - 1]) / sqrt(2)));
+    else n += glm::vec3(0.1) * glm::normalize(glm::vec3(0, sqrt(2), 0));
+
+    return n;
+}
+
+void Heightmap::erode(int cycles)
+{
+    for (int i = 0; i < cycles; i++)
+    {
+        glm::vec2 newpos = glm::vec2(rand() % (int)_heightData[0].size(), rand() % (int)_heightData.size());
+        Particle drop(newpos);
+
+        while (drop.volume > minVol)
+        {
+
+            glm::ivec2 ipos = drop.pos;
+            glm::vec3 n = surfaceNormal(ipos.x, ipos.y);
+
+            drop.speed += dt * glm::vec2(n.x, n.z) / (drop.volume * density);
+            drop.pos += dt * drop.speed;
+            drop.speed *= (1.0 - dt * friction);
+
+            if (!glm::all(glm::greaterThanEqual(drop.pos, glm::vec2(0))) ||
+                !glm::all(glm::lessThan(drop.pos, dim))) break;
+
+            float maxsediment = drop.volume * glm::length(drop.speed) * (_heightData[ipos.x][ipos.y] - _heightData[(int)drop.pos.x][(int)drop.pos.y]);
+            if (maxsediment < 0.0) maxsediment = 0.0;
+            float sdiff = maxsediment - drop.sediment;
+
+            drop.sediment += dt * depositionRate * sdiff;
+            _heightData[ipos.x][ipos.y] -= dt * drop.volume * depositionRate * sdiff;
+
+            drop.volume *= (1.0 - dt * evapRate);
+        }
+    }
+}
+
+}

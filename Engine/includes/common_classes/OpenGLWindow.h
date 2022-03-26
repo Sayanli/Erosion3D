@@ -204,8 +204,10 @@ protected:
      */
     virtual void onMouseWheelScroll(double scrollOffsetX, double scrollOffsetY) {}
 
-private:
     GLFWwindow* _window = nullptr; // Pointer to GLFWwindow, nullptr by default
+
+private:
+
     bool _keyWasPressed[512]; // Array of bools, used by keyPressedOnce function
     bool _hasErrorOccured = false; // Error flag, indicates, if any kind of error has occured
 

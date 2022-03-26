@@ -3,6 +3,7 @@
 // GLM
 #include <glm/gtc/matrix_transform.hpp>
 
+
 // Project
 #include "../includes/common_classes/OpenGLWindow.h"
 
@@ -45,6 +46,8 @@ bool OpenGLWindow::createOpenGLWindow(const std::string& windowTitle, int majorV
         glfwGetWindowSize(_window, &width, &height);
         onWindowSizeChangedInternal(width, height);
     }
+
+
 
     glfwSetMouseButtonCallback(_window, onMouseButtonPressedStatic);
     glfwSetScrollCallback(_window, onMouseWheelScrollStatic);
@@ -106,6 +109,8 @@ void OpenGLWindow::runApp()
         glfwTerminate();
     }
 }
+
+
 
 GLFWwindow* OpenGLWindow::getWindow() const
 {

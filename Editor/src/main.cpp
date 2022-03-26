@@ -4,9 +4,9 @@
 
 int main() 
 {
-	const std::string& windowTitle = "018.) Heightmap Pt.3 - Multiple Layers - Tutorial by Michal Bubnar (www.mbsoftworks.sk)";
-	int majorVersion = 3;
-	int minorVersion = 3;
+	const std::string& windowTitle = "Tech demo";
+	int majorVersion = 4;
+	int minorVersion = 4;
 
 	char answer;
 	std::cout << "Would you like to run in fullscreen mode? (y/n): ";
@@ -22,6 +22,7 @@ int main()
 
 	window.runApp();
 
+	system("pause");
 	if (window.hasErrorOccured())
 	{
 		std::cout << std::endl << std::endl << "Program could not start because of the above errors! Press ENTER to quit..." << std::endl;

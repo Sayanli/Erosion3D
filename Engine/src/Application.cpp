@@ -5,6 +5,10 @@
 // GLM
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <imgui/imgui.h>
+#include <imgui/backends/imgui_impl_opengl3.h>
+#include <imgui/backends/imgui_impl_glfw.h>
+
 // Project
 #include "../includes/Application.h"
 
@@ -19,45 +23,24 @@
 
 #include "../includes/common_classes/static_meshes_3D/skybox.h"
 #include "../includes/common_classes/static_meshes_3D/heightmap.h"
-#include "../includes/common_classes/static_meshes_3D/primitives/cube.h"
-#include "../includes/common_classes/static_meshes_3D/primitives/pyramid.h"
-#include "../includes/common_classes/static_meshes_3D/primitives/torus.h"
 
 #include "../includes/common_classes/shader_structs/ambientLight.h"
 #include "../includes/common_classes/shader_structs/diffuseLight.h"
 
 FlyingCamera camera(glm::vec3(0.0f, 25.0f, -60.0f), glm::vec3(0.0f, 25.0f, -59.0f), glm::vec3(0.0f, 1.0f, 0.0f), 15.0f);
 
-std::unique_ptr<static_meshes_3D::Cube> cube;
-std::unique_ptr<static_meshes_3D::Pyramid> pyramid;
-std::unique_ptr<static_meshes_3D::Torus> torus;
+
 std::unique_ptr<static_meshes_3D::Heightmap> heightmap;
 std::unique_ptr<static_meshes_3D::Skybox> skybox;
 
 float rotationAngleRad = 0.0f;
 bool displayNormals = false;
+bool checkErosion = false;
+bool checkCursor = true;
 shader_structs::AmbientLight ambientLight(glm::vec3(0.6f, 0.6f, 0.6f));
 shader_structs::DiffuseLight diffuseLight(glm::vec3(1.0f, 1.0f, 1.0f), glm::normalize(glm::vec3(0.0f, -1.0f, -1.0f)), 0.4f);
 
-std::vector<glm::vec3> cratePositions
-{
-	glm::vec3(-30.0f, 0.0f, -80.0f),
-	glm::vec3(30.0f, 0.0f, -40.0f),
-	glm::vec3(-30.0f, 0.0f, 0.0f),
-	glm::vec3(30.0f, 0.0f, 40.0f),
-	glm::vec3(-30.0f, 0.0f, 80.0f),
-};
-
-std::vector<glm::vec3> toriPositions
-{
-	glm::vec3(30.0f, 0.0f, -80.0f),
-	glm::vec3(-30.0f, 0.0f, -40.0f),
-	glm::vec3(30.0f, 0.0f, 0.0f),
-	glm::vec3(-30.0f, 0.0f, 40.0f),
-	glm::vec3(30.0f, 0.0f, 80.0f)
-};
-
-const glm::vec3 heightMapSize(200.0f, 40.0f, 200.0f);
+const glm::vec3 heightMapSize(200.0f, 50.0f, 200.0f);
 
 void OpenGLWindow018::initializeScene()
 {
@@ -96,14 +79,19 @@ void OpenGLWindow018::initializeScene()
 		TextureManager::getInstance().loadTexture2D("rocky_terrain", "../../Engine/data/textures/rocky_terrain.jpg");
 		TextureManager::getInstance().loadTexture2D("snow", "../../Engine/data/textures/snow.png");
 
-		cube = std::make_unique<static_meshes_3D::Cube>(true, true, true);
-		pyramid = std::make_unique<static_meshes_3D::Pyramid>(true, true, true);
-		torus = std::make_unique<static_meshes_3D::Torus>(20, 20, 3.0f, 1.5f, true, true, true);
 
 		static_meshes_3D::Heightmap::prepareMultiLayerShaderProgram();
-		heightmap = std::make_unique<static_meshes_3D::Heightmap>("../../Engine/data/heightmaps/tut018.png", true, true, true);
+		heightmap = std::make_unique<static_meshes_3D::Heightmap>("../../Engine/data/heightmaps/tut017.png", true, true, true);
 
 		spm.linkAllPrograms();
+
+
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+		ImGui_ImplOpenGL3_Init();
+		ImGui_ImplGlfw_InitForOpenGL(OpenGLWindow::_window, true);
+		ImGui::StyleColorsDark();
+
 	}
 	catch (const std::runtime_error& ex)
 	{
@@ -149,41 +137,13 @@ void OpenGLWindow018::renderScene()
 	ambientLight.setUniform(mainProgram, ShaderConstants::ambientLight());
 	diffuseLight.setUniform(mainProgram, ShaderConstants::diffuseLight());
 
-	// Render all the crates (as simple cubes)
-	std::vector<glm::mat4> crateModelMatrices;
-	for (const auto& position : cratePositions)
-	{
-		const auto crateSize = 8.0f;
-		auto model = glm::translate(glm::mat4(1.0f), position);
-		const auto renderedHeight = heightmap->getRenderedHeightAtPosition(heightMapSize, position);
-		model = glm::translate(model, glm::vec3(0.0f, 1.5f + crateSize / 2.0f + renderedHeight, 0.0f));
-		model = glm::rotate(model, rotationAngleRad, glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, rotationAngleRad, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, rotationAngleRad, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(crateSize, crateSize, crateSize));
-		crateModelMatrices.push_back(model);
-		mainProgram.setModelAndNormalMatrix(model);
-
-		TextureManager::getInstance().getTexture("crate").bind(0);
-		cube->render();
-	}
-
-	// Render tori
-	std::vector<glm::mat4> torusModelMatrices;
-	for (const auto& position : toriPositions)
-	{
-		auto model = glm::translate(glm::mat4(1.0f), position);
-		const auto renderedHeight = heightmap->getRenderedHeightAtPosition(heightMapSize, position);
-		model = glm::translate(model, glm::vec3(0.0f, 4.5f + renderedHeight, 0.0f));
-		model = glm::rotate(model, rotationAngleRad + 90.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-		torusModelMatrices.push_back(model);
-		mainProgram.setModelAndNormalMatrix(model);
-
-		TextureManager::getInstance().getTexture("white_marble").bind(0);
-		torus->render();
-	}
 
 	// Render heightmap
+	if (checkErosion) {
+		heightmap->erode(50);
+		heightmap->createFromHeightData(heightmap->_heightData);
+	} 
+
 	auto& heightmapShaderProgram = static_meshes_3D::Heightmap::getMultiLayerShaderProgram();
 	heightmapShaderProgram.useProgram();
 	heightmapShaderProgram[ShaderConstants::projectionMatrix()] = getProjectionMatrix();
@@ -195,7 +155,7 @@ void OpenGLWindow018::renderScene()
 
 	const auto heightmapModelMatrix = glm::scale(glm::mat4(1.0f), heightMapSize);
 	heightmapShaderProgram.setModelAndNormalMatrix(heightmapModelMatrix);
-	heightmap->renderMultilayered({ "rocky_terrain", "grass", "snow" }, { 0.2f, 0.3f, 0.55f, 0.7f });
+	heightmap->renderMultilayered({ "rocky_terrain", "grass", "snow" }, { 0.0f, 0.0f, 1.0f, 0.0f });
 
 	if (displayNormals)
 	{
@@ -206,25 +166,24 @@ void OpenGLWindow018::renderScene()
 		normalsShaderProgram[ShaderConstants::viewMatrix()] = camera.getViewMatrix();
 		normalsShaderProgram[ShaderConstants::normalLength()] = 0.5f;
 
-		// Render all the crates points
-		auto matrixIt = crateModelMatrices.cbegin();
-		for (const auto& position : cratePositions)
-		{
-			normalsShaderProgram.setModelAndNormalMatrix(*matrixIt++);
-			cube->renderPoints();
-		}
-
-		// Finally render tori points
-		matrixIt = torusModelMatrices.cbegin();
-		for (const auto& position : toriPositions)
-		{
-			normalsShaderProgram.setModelAndNormalMatrix(*matrixIt++);
-			torus->renderPoints();
-		}
 
 		normalsShaderProgram.setModelAndNormalMatrix(heightmapModelMatrix);
 		heightmap->renderPoints();
 	}
+
+	ImGuiIO& io = ImGui::GetIO();
+	io.DisplaySize.x = static_cast<float>(OpenGLWindow::getScreenWidth());
+	io.DisplaySize.y = static_cast<float>(OpenGLWindow::getScreenHeight());
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+
+
+	ImGui::ShowDemoWindow();
+
+
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 }
 
@@ -242,31 +201,47 @@ void OpenGLWindow018::updateScene()
 		displayNormals = !displayNormals;
 	}
 
+	if (keyPressedOnce(GLFW_KEY_Q)) {
+		checkErosion = !checkErosion;
+		std::cout << "start erosion" << std::endl;
+	}
+	if (keyPressedOnce(GLFW_KEY_SPACE)) {
+		checkCursor = !checkCursor;
+	}
+
+
 	int posX, posY, width, height;
 	glfwGetWindowPos(getWindow(), &posX, &posY);
 	glfwGetWindowSize(getWindow(), &width, &height);
 	camera.setWindowCenterPosition(glm::i32vec2(posX + width / 2, posY + height / 2));
-
-	camera.update([this](int keyCode) {return this->keyPressed(keyCode); },
-		[this]() {double curPosX, curPosY; glfwGetCursorPos(this->getWindow(), &curPosX, &curPosY); return glm::u32vec2(curPosX, curPosY); },
-		[this](const glm::i32vec2& pos) {glfwSetCursorPos(this->getWindow(), pos.x, pos.y); },
-		[this](float f) {return this->sof(f); });
-
+	if (checkCursor) {
+		camera.update([this](int keyCode) {return this->keyPressed(keyCode); },
+			[this]() {double curPosX, curPosY; glfwGetCursorPos(this->getWindow(), &curPosX, &curPosY); return glm::u32vec2(curPosX, curPosY); },
+			[this](const glm::i32vec2& pos) {glfwSetCursorPos(this->getWindow(), pos.x, pos.y); },
+			[this](float f) {return this->sof(f); });
+		glfwSetInputMode(OpenGLWindow::_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	}
+	else glfwSetInputMode(OpenGLWindow::_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 	// Update rotation angle
 	rotationAngleRad += sof(glm::radians(45.0f));
+
+
+
 }
 
 void OpenGLWindow018::releaseScene()
 {
 	skybox.reset();
 
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+
 	ShaderManager::getInstance().clearShaderCache();
 	ShaderProgramManager::getInstance().clearShaderProgramCache();
 	TextureManager::getInstance().clearTextureCache();
 	SamplerManager::getInstance().clearSamplerCache();
 
-	pyramid.reset();
-	cube.reset();
-	torus.reset();
+
 	heightmap.reset();
 }
