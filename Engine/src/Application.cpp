@@ -178,9 +178,24 @@ void OpenGLWindow018::renderScene()
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
+	ImGui::Begin("Editor");
 
-	ImGui::ShowDemoWindow();
+	//Erosion
+	ImGui::Text("Erosion");
+	ImGui::InputInt("remaining", &heightmap->remaining, 1, 1);
+	ImGui::InputInt("Erosion step", &heightmap->erosionstep, 1, 1);
+	//Particle properties
+	ImGui::Text("Particle properties");
+	ImGui::InputFloat("dt", &heightmap->dt, 0.01, 0.01);
+	ImGui::InputFloat("density", &heightmap->density, 0.1, 0.1);
+	ImGui::InputFloat("evapRate", &heightmap->evapRate, 0.001, 0.001);
+	ImGui::InputFloat("deposition rate", &heightmap->depositionRate, 0.1, 0.1);
+	ImGui::InputFloat("min volume", &heightmap->minVol, 0.01, 0.01);
+	ImGui::InputFloat("friction", &heightmap->friction, 0.01, 0.01);
 
+	ImGui::Button("Test");
+
+	ImGui::End();
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

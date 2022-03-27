@@ -81,6 +81,20 @@ public:
     std::vector<std::vector<float>> _heightData;
     
 
+    //Erosion
+    bool active = false;
+    int remaining = 5;
+    int erosionstep = 1;
+    //Particle Properties
+    float dt = 1.2;
+    float density = 1.0;
+    float evapRate = 0.001;
+    float depositionRate = 0.1;
+    float minVol = 0.01;
+    float friction = 0.05;
+
+    void set_dt(float _dt) { this->dt = _dt; }
+
 private:
 
     void setUpVertices();
@@ -97,17 +111,6 @@ private:
 
     glm::vec2 dim;
     double scale = 60.0;
-    //Erosion
-    bool active = false;
-    int remaining = 5;
-    int erosionstep = 1;
-    //Particle Properties
-    float dt = 1.2;
-    float density = 1.0;
-    float evapRate = 0.001;
-    float depositionRate = 0.1;
-    float minVol = 0.01;
-    float friction = 0.05;
 };
 
 
